@@ -26,4 +26,10 @@ def readFile(filename):
    
 def main():
    partition, dimension = readFile(input("Enter the name of the CSV file without the extension: "))
+   print(partition)
 
+   if(dimension == 2):
+      # Find the inverse of the partition
+      invPartition = [len(partition) - bisect_right(partition[::-1], i) for i in range(partition[0])]
+      hooks = [[(partition[i] - j + invPartition[j] - i - 1) for j in range(partition[i])] for i in range(len(partition))]
+      print(hooks)
