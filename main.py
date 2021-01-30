@@ -33,3 +33,7 @@ def main():
       invPartition = [len(partition) - bisect_right(partition[::-1], i) for i in range(partition[0])]
       hooks = [[(partition[i] - j + invPartition[j] - i - 1) for j in range(partition[i])] for i in range(len(partition))]
       print(hooks)
+   elif(dimension == 3):
+      pass
+   else:
+      print("No recognized partition dimension.")
