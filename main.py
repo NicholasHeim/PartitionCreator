@@ -3,41 +3,67 @@ import pandas as pd
 import numpy
 
 def readFile(filename):
-   # file = open(filename + ".csv")
-   file = open("p2.csv")
-   # Read in the dimension number
-   dims = int(file.readline())
+   #with open(filename + ".csv") as file:
+   with open("p3.csv") as file:
+      # Read in the dimension number
+      dims = int(file.readline())
 
-   if(dims == 2):
-      # Read in partition data, strip for safety
-      partition = list(map(int, file.readline().strip().split(',')))
-      # Ensure that the partition is in standard form for return
-      partition.sort(reverse = True)
-   elif(dims == 3):
-      # Each number on a line is the stack height of the plane partition
-      partition = list()
-      while True:
-         line = file.readline()
-         if not line:
-            break
-         partition.append(list(map(int, line.strip().split(','))))
-
-   file.close()
+      if(dims == 2):
+         # Read in partition data, strip for safety
+         partition = list(map(int, file.readline().strip().split(',')))
+         # Ensure that the partition is in standard form for return
+         partition.sort(reverse = True)
+      elif(dims == 3):
+         # Each number on a line is the stack height of the plane partition
+         partition = list()
+         while True:
+            line = file.readline()
+            if not line:
+               break
+            partition.append(list(map(int, line.strip().split(','))))
+      else: return [], dims
    return partition, dims
+
+def d3Hooks(partition):
+   # Determine shape of each level for the hook length calculation
+   # This is done using the count of remaining heights in the original
+   partitionCopy = partition[:] # Copy because we will need the original
+   regPart = []
+   for level in range(partition[0][0]):
+      regPart.append([len(x) for x in partitionCopy if len(x) > 0])
+      partitionCopy = [[height-1 for height in tower if (height - 1) > 0] for tower in partitionCopy]
    
+   # Find the inverse of each individual level for hook length calculation
+   invPartition = [[len(regPart[level]) - bisect_right(regPart[level][::-1], i) for i in range(regPart[level][0])] for level in range(len(partition))]
+
+   # Calculate hook lengths of the whole plane partition one level at a time
+   return [[[(regPart[level][i] - j + invPartition[level][j] - i - 1) + (partition[i][j] - level - 1) for j in range(regPart[level][i])] for i in range(len(regPart[level]))] for level in range(len(partition))]
+
 def main():
    partition, dimension = readFile(input("Enter the name of the CSV file without the extension: "))
-   print("Partition:", partition)
+   invPartition = []
 
    if(dimension == 2):
+      print("Partition:", *partition)
+
       # Find the inverse of the partition (swap rows and columns)
       invPartition = [len(partition) - bisect_right(partition[::-1], i) for i in range(partition[0])]
       hooks = [[(partition[i] - j + invPartition[j] - i - 1) for j in range(partition[i])] for i in range(len(partition))]
+      
+      # Print hook length results to console
       print("Hook lengths:")
-      for s in hooks:
-         print(*s)
+      for s in hooks: print(*s)
    elif(dimension == 3):
-      pass
+      print("Partition:")
+      for s in partition: print(*s)
+      
+      hooks = d3Hooks(partition)
+      
+      print("Hook Lengths:")
+      for i, s in enumerate(hooks):
+         print("Level", i + 1)
+         for t in s:
+            print(*t)
    else:
       print("No recognized partition dimension.")
 
