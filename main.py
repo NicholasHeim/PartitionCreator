@@ -3,7 +3,8 @@ import pandas as pd
 import numpy
 
 def readFile(filename):
-   file = open(filename + ".csv")
+   # file = open(filename + ".csv")
+   file = open("p2.csv")
    # Read in the dimension number
    dims = int(file.readline())
 
@@ -26,14 +27,18 @@ def readFile(filename):
    
 def main():
    partition, dimension = readFile(input("Enter the name of the CSV file without the extension: "))
-   print(partition)
+   print("Partition:", partition)
 
    if(dimension == 2):
-      # Find the inverse of the partition
+      # Find the inverse of the partition (swap rows and columns)
       invPartition = [len(partition) - bisect_right(partition[::-1], i) for i in range(partition[0])]
       hooks = [[(partition[i] - j + invPartition[j] - i - 1) for j in range(partition[i])] for i in range(len(partition))]
-      print(hooks)
+      print("Hook lengths:")
+      for s in hooks:
+         print(*s)
    elif(dimension == 3):
       pass
    else:
       print("No recognized partition dimension.")
+
+main()
