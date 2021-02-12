@@ -69,12 +69,23 @@ def calcHooks(partition, dimension):
       return
    return hooks
 
-def bruteForce(partition, dimension):
-   
-
-
-
-   pass
+def verifySYT(partition, syt):
+   # Determine if partition is a legal SYT
+   for row in range(len(partition)):
+      for col in range(partition[row]):
+         # Check existence of right square
+         if (col + 1) < partition[row]:
+            # Determine if right square value is larger
+            if syt[row][col] > syt[row][col + 1]:
+               return False
+         # Ensure no out of range check
+         if row < len(partition) - 1:
+            # Check existence of down square
+            if col < partition[row + 1]:
+               # Determine if down square value is larger
+               if syt[row][col] > syt[row + 1][col]:
+                  return False
+   return True
 
 def main():
    partition, dimension = readFile(input("Enter the name of the CSV file without the extension: "))
@@ -82,11 +93,12 @@ def main():
 
    # Output the calculated number of SYT:
    count = math.factorial(sum(partition)) / prod([i for sub in hooks for i in sub])
-   print("Expected count: ", int(count))
+   print("   Expected count:", int(count))
+
+
+   #print("       SYT Result:", verifySYT(partition, syt))
 
    # Start with a 2D partition for brute force
-   bruteForce(partition, dimension)
+   #print("Brute force count:", bruteForce(partition, dimension))
    
-
-
 main()
