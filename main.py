@@ -1,10 +1,10 @@
 from bisect import bisect_right
-import pandas as pd
-import numpy
+from numpy import prod
+import math
 
 def readFile(filename):
    #with open(filename + ".csv") as file:
-   with open("p3.csv") as file:
+   with open("p2.csv") as file:
       # Read in the dimension number
       dims = int(file.readline())
 
@@ -34,13 +34,19 @@ def d3Hooks(partition):
       partitionCopy = [[height-1 for height in tower if (height - 1) > 0] for tower in partitionCopy]
    
    # Find the inverse of each individual level for hook length calculation
-   invPartition = [[len(regPart[level]) - bisect_right(regPart[level][::-1], i) for i in range(regPart[level][0])] for level in range(len(partition))]
+   invPartition = [[len(regPart[level]) - bisect_right(regPart[level][::-1], i) for i in range(regPart[level][0])] for level in range(len(regPart))]
 
    # Calculate hook lengths of the whole plane partition one level at a time
-   return [[[(regPart[level][i] - j + invPartition[level][j] - i - 1) + (partition[i][j] - level - 1) for j in range(regPart[level][i])] for i in range(len(regPart[level]))] for level in range(len(partition))]
+   hooks = [[[(regPart[level][i] - j + invPartition[level][j] - i - 2) + (partition[i][j] - level) for j in range(regPart[level][i])] for i in range(len(regPart[level]))] for level in range(len(regPart))]
 
-def main():
-   partition, dimension = readFile(input("Enter the name of the CSV file without the extension: "))
+   print("Hook Lengths:")
+   for i, s in enumerate(hooks):
+      print("Level", i + 1)
+      for t in s:
+         print(*t)
+   return hooks
+
+def calcHooks(partition, dimension):
    invPartition = []
 
    if(dimension == 2):
@@ -56,15 +62,31 @@ def main():
    elif(dimension == 3):
       print("Partition:")
       for s in partition: print(*s)
-      
+
       hooks = d3Hooks(partition)
-      
-      print("Hook Lengths:")
-      for i, s in enumerate(hooks):
-         print("Level", i + 1)
-         for t in s:
-            print(*t)
    else:
       print("No recognized partition dimension.")
+      return
+   return hooks
+
+def bruteForce(partition, dimension):
+   
+
+
+
+   pass
+
+def main():
+   partition, dimension = readFile(input("Enter the name of the CSV file without the extension: "))
+   hooks = calcHooks(partition, dimension)
+
+   # Output the calculated number of SYT:
+   count = math.factorial(sum(partition)) / prod([i for sub in hooks for i in sub])
+   print("Expected count: ", int(count))
+
+   # Start with a 2D partition for brute force
+   bruteForce(partition, dimension)
+   
+
 
 main()
