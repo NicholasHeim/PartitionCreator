@@ -1,6 +1,6 @@
 from bisect import bisect_right
+from math import factorial
 from numpy import prod
-import math
 
 def readFile(filename):
    #with open(filename + ".csv") as file:
@@ -77,24 +77,69 @@ def verifySYT(partition, syt):
          if (col + 1) < partition[row]:
             # Determine if right square value is larger
             if syt[row][col] > syt[row][col + 1]:
-               return False
+               return 0
          # Ensure no out of range check
          if row < len(partition) - 1:
             # Check existence of down square
             if col < partition[row + 1]:
                # Determine if down square value is larger
                if syt[row][col] > syt[row + 1][col]:
-                  return False
-   return True
+                  return 0
+   return 1
+
+# Definition adapted from https://docs.python.org/3/library/itertools.html#itertools.permutations
+def permutations(iterable, r=None):
+    # permutations('ABCD', 2) --> AB AC AD BA BC BD CA CB CD DA DB DC
+    # permutations(range(3)) --> 012 021 102 120 201 210
+    pool = tuple(iterable)
+    n = len(pool)
+    r = n if r is None else r
+    if r > n:
+        return
+    indices = list(range(n))
+    cycles = list(range(n, n-r, -1))
+    yield tuple(pool[i] for i in indices[:r])
+    while n:
+        for i in reversed(range(r)):
+            cycles[i] -= 1
+            if cycles[i] == 0:
+                indices[i:] = indices[i+1:] + indices[i:i+1]
+                cycles[i] = n - i
+            else:
+                j = cycles[i]
+                indices[i], indices[-j] = indices[-j], indices[i]
+                yield tuple(pool[i] for i in indices[:r])
+                break
+        else:
+            return
+
+def countSYT(partition):
+   # Standard is to work with (1, ... , n), add 1 to i to preserve this
+   numbers = [i + 1 for i in range(sum(partition))]
+   # Find all permutations
+   perms = list(permutations(numbers))
+   # Remove permutations where 1 is not the first number
+   # These are false by definition, reduces calculation time
+   perms = [i for i in perms if i[0] == 1]
+   # Convert each permutation into the form defined by the partition
+   # This needs to be done before sending it to verifySYT
+   # We currently do not care what each correct one is, only the number of them
+   count = 0
+   for p in perms:
+      syt = [p[sum(partition[:pos]):sum(partition[:pos]) + cols] for pos, cols in enumerate(partition)]
+      count += verifySYT(partition, syt)
+   print("Brute force count:", count)
+
 
 def main():
    partition, dimension = readFile(input("Enter the name of the CSV file without the extension: "))
    hooks = calcHooks(partition, dimension)
 
    # Output the calculated number of SYT:
-   count = math.factorial(sum(partition)) / prod([i for sub in hooks for i in sub])
+   count = factorial(sum(partition)) / prod([i for sub in hooks for i in sub])
    print("   Expected count:", int(count))
 
+   countSYT(partition)
 
    #print("       SYT Result:", verifySYT(partition, syt))
 
