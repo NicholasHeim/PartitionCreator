@@ -6,7 +6,7 @@ from numpy import prod
 
 def readFile(filename):
    #with open(filename + ".csv") as file:
-   with open("p2.csv") as file:
+   with open("p3.csv") as file:
       # Read in the dimension number
       dims = int(file.readline())
 
@@ -80,7 +80,7 @@ def verifySYT(partition, syt):
             # Determine if right square value is larger
             if syt[row][col] > syt[row][col + 1]:
                return 0
-         # Ensure no out of range check
+         # Ensure no out of bounds check for down
          if row < len(partition) - 1:
             # Check existence of down square
             if col < partition[row + 1]:
@@ -99,15 +99,47 @@ def countSYT(partition):
       count += verifySYT(partition, syt)
    print("Brute force count:", count)
 
+def verifyPSYT(psyt):
+   for level in range(len(psyt)):
+      for row in range(len(psyt[level])):
+         for col in range(len(psyt[level][row])):
+            # Check existence of right square
+            if (col + 1) < len(psyt[level][row]):
+               # Determine if right square value is larger
+               if psyt[level][row][col] > psyt[level][row][col + 1]:
+                  return 0
+            # Ensure no out of bounds check for down
+            if row < len(psyt[level]) - 1:
+               # Check existence of down square
+               if col < len(psyt[level][row + 1]):
+                  # Determine if down square value is larger
+                  if psyt[level][row][col] > psyt[level][row + 1][col]:
+                     return 0
+            # Ensure no out of bounds check for above box
+            if level < len(psyt) - 1:
+               # Check existence of above box row and column
+               if row < len(psyt[level + 1]) - 1:
+                  if col < len(psyt[level + 1][row]) - 1:
+                     # Determine if above box value is larger
+                     if psyt[level][row][col] > psyt[level + 1][row][col]:
+                        return 0
+   return 1
+
 def main():
    partition, dimension = readFile(input("Enter the name of the CSV file without the extension: "))
    hooks = calcHooks(partition, dimension)
 
-   # Output the calculated number of SYT:
-   count = factorial(sum(partition)) / prod([i for sub in hooks for i in sub])
-   print("   Expected count:", int(count))
+   if(dimension == 2):
+      # Output the calculated number of SYT:
+      count = factorial(sum(partition)) / prod([i for sub in hooks for i in sub])
+      print("   Expected count:", int(count))
 
-   countSYT(partition)
-
+      # Brute force the number of partitions
+      countSYT(partition)
+   if(dimension == 3):
+      # Trivial PSYT for partition lambda = ((3, 2, 1), (2, 1))
+      #psyt = [[[1, 2, 3], [4, 5]], [[6, 7], [8]], [[9]]]
+      #print("Verification:", verifyPSYT(psyt))
+      pass
    
 main()
