@@ -7,7 +7,7 @@ import multiprocessing as mp
 
 def readFile(filename):
    #with open(filename + ".csv") as file:
-   with open("p3.csv") as file:
+   with open("p2.csv") as file:
       # Read in the dimension number
       dims = int(file.readline())
 
@@ -167,6 +167,5 @@ def main():
    if(dimension == 3):
       count = countPSYT(hooks)
       print("Count:", count)
-      pass
    
 main()
