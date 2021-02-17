@@ -1,8 +1,9 @@
-import multiprocessing as mp
 from itertools import permutations
 from bisect import bisect_right
 from math import factorial
 from numpy import prod
+
+import multiprocessing as mp
 
 def readFile(filename):
    #with open(filename + ".csv") as file:
@@ -71,60 +72,85 @@ def calcHooks(partition, dimension):
       return
    return hooks
 
-def verifySYT(partition, syt):
-   # Determine if partition is a legal SYT
-   for row in range(len(partition)):
-      for col in range(partition[row]):
-         # Check existence of right square
-         if (col + 1) < partition[row]:
+def verifySYT(syt):
+   for row in range(len(syt)):
+      for col in range(len(syt[row])):
+         try:
             # Determine if right square value is larger
             if syt[row][col] > syt[row][col + 1]:
                return 0
-         # Ensure no out of bounds check for down
-         if row < len(partition) - 1:
-            # Check existence of down square
-            if col < partition[row + 1]:
-               # Determine if down square value is larger
-               if syt[row][col] > syt[row + 1][col]:
-                  return 0
+
+            # Determine if down square value is larger
+            if syt[row][col] > syt[row + 1][col]:
+               return 0
+         
+         # All exceptions will be an out of bounds error
+         # Ignore them to save time on checks because they are a minimal case
+         except: pass
    return 1
 
 def countSYT(partition):
    # Standard is to work with (1, ... , n), add 1 to i to preserve this
-   numbers = [i + 1 for i in range(sum(partition))]
+   numbers = [i + 1 for i in range(sum(len(row) for row in partition))]
+
+   # Copy the partition to avoid destructive behavior
+   syt = partition[:]
    count = 0
+   
    for perm in permutations(numbers):
+      # Break if the first number is not 1, lowers to (n-1)! options
       if(perm[0] != 1): break
-      syt = [perm[sum(partition[:pos]):sum(partition[:pos]) + cols] for pos, cols in enumerate(partition)]
-      count += verifySYT(partition, syt)
-   print("Brute force count:", count)
+
+      # Copy the partition to avoid destructive behavior
+      pIter = iter(perm)
+
+      # Overwrite all values in syt with values from current perm
+      syt = [[next(pIter) for __ in row] for row in syt]
+      count += verifySYT(syt)
+   
+   return count
 
 def verifyPSYT(psyt):
    for level in range(len(psyt)):
       for row in range(len(psyt[level])):
          for col in range(len(psyt[level][row])):
-            # Check existence of right square
-            if (col + 1) < len(psyt[level][row]):
+            try:
                # Determine if right square value is larger
                if psyt[level][row][col] > psyt[level][row][col + 1]:
                   return 0
-            # Ensure no out of bounds check for down
-            if row < len(psyt[level]) - 1:
-               # Check existence of down square
-               if col < len(psyt[level][row + 1]):
-                  # Determine if down square value is larger
-                  if psyt[level][row][col] > psyt[level][row + 1][col]:
-                     return 0
-            # Ensure no out of bounds check for above box
-            if level < len(psyt) - 1:
-               # Check existence of above box row and column
-               if row < len(psyt[level + 1]) - 1:
-                  if col < len(psyt[level + 1][row]) - 1:
-                     # Determine if above box value is larger
-                     if psyt[level][row][col] > psyt[level + 1][row][col]:
-                        return 0
+
+               # Determine if down square value is larger
+               if psyt[level][row][col] > psyt[level][row + 1][col]:
+                  return 0
+
+               # Determine if above box value is larger
+               if psyt[level][row][col] > psyt[level + 1][row][col]:
+                  return 0
+            
+            # All exceptions will be an out of bounds error
+            # Ignore them to save time on checks because they are a minimal case
+            except: pass
    return 1
 
+def countPSYT(partition):
+   # Standard is to work with (1, ... , n), add 1 to i to preserve this
+   numbers = [i + 1 for i in range(sum(sum(len(row) for row in level) for level in partition))]
+
+   # Copy the partition to avoid destructive behavior
+   psyt = partition[:]
+   count = 0
+
+   for perm in permutations(numbers):
+      # Break if the first number is not 1, lowers to (n-1)! options
+      if(perm[0] != 1): break 
+      pIter = iter(perm)
+
+      # Overwrite all values in psyt with values from perm
+      psyt = [[[next(pIter) for __ in row] for row in level] for level in psyt]
+      count += verifyPSYT(psyt)
+
+   return count
+   
 def main():
    partition, dimension = readFile(input("Enter the name of the CSV file without the extension: "))
    hooks = calcHooks(partition, dimension)
@@ -134,12 +160,13 @@ def main():
       count = factorial(sum(partition)) / prod([i for sub in hooks for i in sub])
       print("   Expected count:", int(count))
 
-      # Brute force the number of partitions
-      countSYT(partition)
+      # Brute force the number of partitions, meant as a check for correctness
+      count = countSYT(hooks)
+      print("Brute force count:", count)
+
    if(dimension == 3):
-      # Trivial PSYT for partition lambda = ((3, 2, 1), (2, 1))
-      #psyt = [[[1, 2, 3], [4, 5]], [[6, 7], [8]], [[9]]]
-      #print("Verification:", verifyPSYT(psyt))
+      count = countPSYT(hooks)
+      print("Count:", count)
       pass
    
 main()
