@@ -79,11 +79,14 @@ def verifySYT(syt):
             # Determine if right square value is larger
             if syt[row][col] > syt[row][col + 1]:
                return 0
+         # All exceptions will be an out of bounds error
+         # Ignore them to save time on checks because they are a minimal case
+         except: pass
 
+         try:
             # Determine if down square value is larger
             if syt[row][col] > syt[row + 1][col]:
                return 0
-         
          # All exceptions will be an out of bounds error
          # Ignore them to save time on checks because they are a minimal case
          except: pass
@@ -118,15 +121,22 @@ def verifyPSYT(psyt):
                # Determine if right square value is larger
                if psyt[level][row][col] > psyt[level][row][col + 1]:
                   return 0
+            # All exceptions will be an out of bounds error
+            # Ignore them to save time on checks because they are a minimal case
+            except: pass
 
+            try:
                # Determine if down square value is larger
                if psyt[level][row][col] > psyt[level][row + 1][col]:
                   return 0
+            # All exceptions will be an out of bounds error
+            # Ignore them to save time on checks because they are a minimal case
+            except: pass
 
+            try:
                # Determine if above box value is larger
                if psyt[level][row][col] > psyt[level + 1][row][col]:
                   return 0
-            
             # All exceptions will be an out of bounds error
             # Ignore them to save time on checks because they are a minimal case
             except: pass
