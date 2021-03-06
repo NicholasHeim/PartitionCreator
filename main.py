@@ -27,6 +27,7 @@ def readFile(filename):
       else: return [], dims
    return partition, dims
 
+
 def d3Hooks(partition):
    # Determine shape of each level for the hook length calculation
    # This is done using the count of remaining heights in the original
@@ -48,6 +49,7 @@ def d3Hooks(partition):
       for t in s:
          print(*t)
    return hooks
+
 
 def calcHooks(partition, dimension):
    invPartition = []
@@ -72,6 +74,7 @@ def calcHooks(partition, dimension):
       return
    return hooks
 
+
 def verifySYT(syt):
    for row in range(len(syt)):
       for col in range(len(syt[row])):
@@ -91,6 +94,7 @@ def verifySYT(syt):
          # Ignore them to save time on checks because they are a minimal case
          except: pass
    return 1
+
 
 def countSYT(partition):
    # Standard is to work with (1, ... , n), add 1 to i to preserve this
@@ -112,6 +116,7 @@ def countSYT(partition):
       count += verifySYT(syt)
    
    return count
+
 
 def verifyPSYT(psyt):
    for level in range(len(psyt)):
@@ -142,6 +147,7 @@ def verifyPSYT(psyt):
             except: pass
    return 1
 
+
 def countPSYT(partition):
    # Standard is to work with (1, ... , n), add 1 to i to preserve this
    numbers = [i + 1 for i in range(sum(sum(len(row) for row in level) for level in partition))]
@@ -160,6 +166,7 @@ def countPSYT(partition):
       count += verifyPSYT(psyt)
 
    return count
+
 
 def plane_partition_num ( n ):
 
@@ -247,7 +254,34 @@ def plane_partition_num ( n ):
 
    return value
 
+
 def genPartitions(size):
+   # Create base 2D list, fill with zeros
+   # Set [0][0] = size
+   
+   # Setup queue using built-in queue (import queue)
+   # Queue object is a list of [partitionObg, tuple(x, y)]
+   # Where partitionObj is the partition that one block will be moved in
+   # and tuple(x, y) is the row and column that the block will come from
+   # Note: We do not need a z coordinate here because we always take the top
+   #       as it is the only legal movement from a stack of blocks
+   pass
+
+
+def findLegalPos(queueObj, setObj):
+   # An instance of queueObj is a list of [partitionObj, tuple(x, y)]
+   # setObj is a variable holding the current set of partitions for output
+   
+   # Decrement column at partitionObj[x][y]
+   # Find all legal movements
+   #     ^ Find a way to avoid repeating the beginning one (otherwise infinite loop)
+   # Add a resulting partition to the set if it is new
+   # Push NEW partitions to the queue after passing to findMoves(partition)
+   pass
+
+
+def findMoves(partition):
+   # Yield a result (legally movable block) when found
    pass
 
 
