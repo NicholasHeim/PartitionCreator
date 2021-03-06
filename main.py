@@ -7,7 +7,7 @@ import multiprocessing as mp
 
 def readFile(filename):
    #with open(filename + ".csv") as file:
-   with open("p2.csv") as file:
+   with open("p3.csv") as file:
       # Read in the dimension number
       dims = int(file.readline())
 
@@ -160,7 +160,7 @@ def countPSYT(partition):
       count += verifyPSYT(psyt)
 
    return count
-   
+
 def main():
    partition, dimension = readFile(input("Enter the name of the CSV file without the extension: "))
    hooks = calcHooks(partition, dimension)
@@ -176,6 +176,14 @@ def main():
 
    if(dimension == 3):
       count = countPSYT(hooks)
-      print("Count:", count)
+      print("\n      Count:", count)
+
+      # Take the factorial of n, the size of the partition. Calculated by summing across all heights
+      numerator = factorial(sum([i for col in partition for i in col]))
+      
+      # Converts the hook length 3D list into a 1D list and then multiplies all of the values together
+      denominator = prod([i for row in hooks for col in row for i in col])
+      
+      print("Naive Count:", (numerator/denominator))
    
 main()
