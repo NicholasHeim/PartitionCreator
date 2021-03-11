@@ -2,8 +2,9 @@ from itertools import permutations
 from bisect import bisect_right
 from math import factorial
 from numpy import prod
+import queue
 
-import multiprocessing as mp
+#import multiprocessing as mp
 
 def readFile(filename):
    #with open(filename + ".csv") as file:
@@ -255,17 +256,33 @@ def plane_partition_num ( n ):
    return value
 
 
-def genPartitions(size):
-   # Create base 2D list, fill with zeros
-   # Set [0][0] = size
+# This functions is meant for testing purposes
+def printQueueObj(queueObj):
+   for row in queueObj[0]:
+      print(*row)
    
-   # Setup queue using built-in queue (import queue)
-   # Queue object is a list of [partitionObg, tuple(x, y)]
+   print('\n(X, Y):', queueObj[1])
+
+
+def genPartitions(size):
+   # Create (size) x (size) list, fill with zeros
+   partition = [[0 for __ in range(size)] for __ in range(size)]
+   
+   # Set this position to zero as we assume that we begin with a "tower" and move one block at a time
+   partition[0][0] = size
+
+   # Setup queue using built-in queue
+   q = queue.Queue()
+   
+   # Queue instance is a tuple of (partition, (x, y))
+   pos = (0, 0)
+   start = (partition, pos)
+   q.put(start)
+
    # Where partitionObj is the partition that one block will be moved in
    # and tuple(x, y) is the row and column that the block will come from
    # Note: We do not need a z coordinate here because we always take the top
    #       as it is the only legal movement from a stack of blocks
-   pass
 
 
 def findLegalPos(queueObj, setObj):
