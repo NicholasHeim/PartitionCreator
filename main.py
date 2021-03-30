@@ -7,6 +7,7 @@ import queue
 #import multiprocessing as mp
 
 def readFile(filename):
+
    #with open(filename + ".csv") as file:
    with open("p3.csv") as file:
       # Read in the dimension number
@@ -30,6 +31,7 @@ def readFile(filename):
 
 
 def d3Hooks(partition):
+
    # Determine shape of each level for the hook length calculation
    # This is done using the count of remaining heights in the original
    partitionCopy = partition[:] # Copy because we will need the original
@@ -53,6 +55,7 @@ def d3Hooks(partition):
 
 
 def calcHooks(partition, dimension):
+
    invPartition = []
 
    if(dimension == 2):
@@ -77,6 +80,7 @@ def calcHooks(partition, dimension):
 
 
 def verifySYT(syt):
+
    for row in range(len(syt)):
       for col in range(len(syt[row])):
          try:
@@ -98,6 +102,7 @@ def verifySYT(syt):
 
 
 def countSYT(partition):
+
    # Standard is to work with (1, ... , n), add 1 to i to preserve this
    numbers = [i + 1 for i in range(sum(len(row) for row in partition))]
 
@@ -120,6 +125,7 @@ def countSYT(partition):
 
 
 def verifyPSYT(psyt):
+
    for level in range(len(psyt)):
       for row in range(len(psyt[level])):
          for col in range(len(psyt[level][row])):
@@ -150,6 +156,7 @@ def verifyPSYT(psyt):
 
 
 def countPSYT(partition):
+
    # Standard is to work with (1, ... , n), add 1 to i to preserve this
    numbers = [i + 1 for i in range(sum(sum(len(row) for row in level) for level in partition))]
 
@@ -256,17 +263,10 @@ def plane_partition_num ( n ):
    return value
 
 
-# This functions is meant for testing purposes
-def printQueueObj(queueObj):
-   for row in queueObj[0]:
-      print(*row)
-   
-   print('\n(X, Y):', queueObj[1])
-
-
 def genPartitions(size):
+   
    # Set up the set to contain all unique partitions
-   unique = set()
+   uniqueParts = set()
 
    # Create (size) x (size) list, fill with zeros
    initialPart = [[0 for __ in range(size)] for __ in range(size)]
@@ -277,44 +277,60 @@ def genPartitions(size):
    # Store as a tuple for set item comparison later (hashability check)
    initialPart = tuple(tuple(i) for i in initialPart)
 
-   # Setup queue using built-in queue
-   queueObj = queue.Queue()
-   
-   # Queue instance is a tuple of (partition, (x, y))
-   # Where partition is the partition that one block will be moved in
-   # and tuple(x, y) is the row and column that the block will come from
-   # Note: We do not need a z coordinate here because we always take the top
-   #       as it is the only legal movement from a stack of blocks
-   pos = (0, 0)
-   start = (initialPart, pos)
-   queueObj.put(start)
+   uniqueParts.add(initialPart)
 
-   while(not queueObj.empty()):
-      findLegalPos(queueObj, unique)
+   for partition in uniqueParts:
+      print(partition)
+      findLegalBlock(uniqueParts, partition)
 
 
-def findLegalPos(queueObj, setObj):
-   # queueObj holds all 'to analyze' objects of the form (partition, (x, y))
-   # setObj holds the current set of unique partitions for output
-   
-   # Get the next partition in the queue for analysis
-   current = queueObj.get()
+def findLegalBlock(uniqueParts, partition):
 
-   # If the current partition is found in the set then we have already computed
-   # the legal movements from it.
-   if(current[0] in setObj):
-      return
-   setObj.add(current[0])
+   # Steps to find a movable block:
+   #  Loop through every (i, j) in the partition
+   #  If, at (i, j), the following are true:
+   #     1. partition[i + 1][j] < partition[i][j]
+   #     2. partition[i][j + 1] < partition[i][j]
+   # Then we call findLegalPositions
+   checks = [False, False]
+   for i, row in enumerate(partition):
+      for j, __ in enumerate(row):
+         checks = [False, False]
+         
+         try:
+            if partition[i + 1][j] >= partition[i][j]: continue
+            
+            checks[0] = True
+         # All exceptions will be an out of bounds error
+         # Ignore them to save time on checks because they are a minimal case
+         # They only mean that we do not have to check a value here
+         except: pass
 
-   # Decrement column at partition[x][y]
-   # Find all legal movements
-   #     ^ Find a way to avoid repeating the beginning one (otherwise infinite loop)
-   # Add a resulting partition to the set if it is new
-   # Push NEW partitions to the queue after passing to findMoves(partition)
-   return
+         try:
+            if partition[i][j + 1] >= partition[i][j]: continue
+            
+            checks[1] = True
+         # All exceptions will be an out of bounds error
+         # Ignore them to save time on checks because they are a minimal case
+         # They only mean that we do not have to check a value here
+         except: pass
+
+         if checks[0] == True and checks[1] == True:
+            findLegalPositions(uniqueParts, partition, i, j)
+
+
+def findLegalPositions(uniqueParts, partition, i, j):
+   print(f"partition: {partition}\t (i, j): ({i}, {j})")
+
+   # Convert the tuple partition into a list for editing
+   listPart = [list(row) for row in partition]
+
+   # Decrement the 
+   listPart[i][j] -= 1
 
 
 def main():
+
    partition, dimension = readFile(input("Enter the name of the CSV file without the extension: "))
    hooks = calcHooks(partition, dimension)
 
@@ -335,4 +351,5 @@ def main():
       
       print("Naive Count:", (numerator/denominator))
    
-main()
+#main()
+genPartitions(3)
