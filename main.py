@@ -265,41 +265,53 @@ def printQueueObj(queueObj):
 
 
 def genPartitions(size):
+   # Set up the set to contain all unique partitions
+   unique = set()
+
    # Create (size) x (size) list, fill with zeros
-   partition = [[0 for __ in range(size)] for __ in range(size)]
+   initialPart = [[0 for __ in range(size)] for __ in range(size)]
    
    # Set this position to zero as we assume that we begin with a "tower" and move one block at a time
-   partition[0][0] = size
+   initialPart[0][0] = size
+
+   # Store as a tuple for set item comparison later (hashability check)
+   initialPart = tuple(tuple(i) for i in initialPart)
 
    # Setup queue using built-in queue
-   q = queue.Queue()
+   queueObj = queue.Queue()
    
    # Queue instance is a tuple of (partition, (x, y))
-   pos = (0, 0)
-   start = (partition, pos)
-   q.put(start)
-
-   # Where partitionObj is the partition that one block will be moved in
+   # Where partition is the partition that one block will be moved in
    # and tuple(x, y) is the row and column that the block will come from
    # Note: We do not need a z coordinate here because we always take the top
    #       as it is the only legal movement from a stack of blocks
+   pos = (0, 0)
+   start = (initialPart, pos)
+   queueObj.put(start)
+
+   while(not queueObj.empty()):
+      findLegalPos(queueObj, unique)
 
 
 def findLegalPos(queueObj, setObj):
-   # An instance of queueObj is a list of [partitionObj, tuple(x, y)]
-   # setObj is a variable holding the current set of partitions for output
+   # queueObj holds all 'to analyze' objects of the form (partition, (x, y))
+   # setObj holds the current set of unique partitions for output
    
-   # Decrement column at partitionObj[x][y]
+   # Get the next partition in the queue for analysis
+   current = queueObj.get()
+
+   # If the current partition is found in the set then we have already computed
+   # the legal movements from it.
+   if(current[0] in setObj):
+      return
+   setObj.add(current[0])
+
+   # Decrement column at partition[x][y]
    # Find all legal movements
    #     ^ Find a way to avoid repeating the beginning one (otherwise infinite loop)
    # Add a resulting partition to the set if it is new
    # Push NEW partitions to the queue after passing to findMoves(partition)
-   pass
-
-
-def findMoves(partition):
-   # Yield a result (legally movable block) when found
-   pass
+   return
 
 
 def main():
@@ -309,11 +321,7 @@ def main():
    if(dimension == 2):
       # Output the calculated number of SYT:
       count = factorial(sum(partition)) / prod([i for sub in hooks for i in sub])
-      print("   Expected count:", int(count))
-
-      # Brute force the number of partitions, meant as a check for correctness
-      count = countSYT(hooks)
-      print("Brute force count:", count)
+      print("Count:", int(count))
 
    if(dimension == 3):
       count = countPSYT(hooks)
