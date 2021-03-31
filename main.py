@@ -260,14 +260,11 @@ def plane_partition_num ( n ):
 
    value = pp[n]
 
-   return value
+   return int(value)
 
 
 def genPartitions(size):
    
-   # Set up the set to contain all unique partitions
-   uniqueParts = set()
-
    # Create (size) x (size) list, fill with zeros
    initialPart = [[0 for __ in range(size)] for __ in range(size)]
    
@@ -277,22 +274,37 @@ def genPartitions(size):
    # Store as a tuple for set item comparison later (hashability check)
    initialPart = tuple(tuple(i) for i in initialPart)
 
+   # Set up the set to contain all unique partitions
+   uniqueParts = set()
    uniqueParts.add(initialPart)
 
-   for partition in uniqueParts:
-      print(partition)
-      findLegalBlock(uniqueParts, partition)
+   newUnique = set()
+
+   i = 0
+   usedPartitions = set()
+   while i < len(uniqueParts):
+      for partition in uniqueParts.symmetric_difference(usedPartitions):
+         usedPartitions.add(partition)
+         newUnique.update(findLegalBlock(partition))
+      
+      uniqueParts.update(newUnique)
+      newUnique.clear()
+      i += 1
+   
+   return len(uniqueParts)
 
 
-def findLegalBlock(uniqueParts, partition):
+def findLegalBlock(partition):
+
+   newUnique = set()
 
    # Steps to find a movable block:
    #  Loop through every (i, j) in the partition
    #  If, at (i, j), the following are true:
    #     1. partition[i + 1][j] < partition[i][j]
    #     2. partition[i][j + 1] < partition[i][j]
+   # Note that both conditions must be true.
    # Then we call findLegalPositions
-   checks = [False, False]
    for i, row in enumerate(partition):
       for j, __ in enumerate(row):
          checks = [False, False]
@@ -302,7 +314,6 @@ def findLegalBlock(uniqueParts, partition):
             
             checks[0] = True
          # All exceptions will be an out of bounds error
-         # Ignore them to save time on checks because they are a minimal case
          # They only mean that we do not have to check a value here
          except: pass
 
@@ -311,22 +322,61 @@ def findLegalBlock(uniqueParts, partition):
             
             checks[1] = True
          # All exceptions will be an out of bounds error
-         # Ignore them to save time on checks because they are a minimal case
          # They only mean that we do not have to check a value here
          except: pass
 
          if checks[0] == True and checks[1] == True:
-            findLegalPositions(uniqueParts, partition, i, j)
+            newUnique.update(findLegalPositions(partition, i, j))
+
+   return newUnique
 
 
-def findLegalPositions(uniqueParts, partition, i, j):
-   print(f"partition: {partition}\t (i, j): ({i}, {j})")
+def findLegalPositions(partition, i, j):
+
+   newParts = set()
 
    # Convert the tuple partition into a list for editing
    listPart = [list(row) for row in partition]
 
-   # Decrement the 
+   # Decrement the height at position (i, j)
    listPart[i][j] -= 1
+
+   # Find all legal movements of the block by checking the following conditions:
+   #     1. listPart[x - 1][y] > listPart[x][y]
+   #     2. listPart[x][y - 1] > listPart[x][y]
+   # Note that both conditions must be true.
+   for x, row in enumerate(listPart):
+      for y, __ in enumerate(row):
+         checks = [False, False]
+         
+         if(x == 0):
+            checks[0] = True
+
+            if listPart[x][y - 1] <= listPart[x][y]:
+               continue
+            checks[1] = True
+         elif(y == 0):
+            if listPart[x - 1][y] <= listPart[x][y]: 
+               continue
+            checks[0] = True
+
+            checks[1] = True
+         else:
+            if listPart[x - 1][y] <= listPart[x][y]:
+               continue
+            checks[0] = True
+
+            if listPart[x][y - 1] <= listPart[x][y]:
+               continue
+            checks[1] = True
+
+         if checks[0] == True and checks[1] == True:
+            listPart[x][y] += 1
+            tPart = tuple([tuple(row) for row in listPart])
+            newParts.add(tPart)
+            listPart[x][y] -= 1
+   
+   return newParts
 
 
 def main():
@@ -352,4 +402,34 @@ def main():
       print("Naive Count:", (numerator/denominator))
    
 #main()
-genPartitions(3)
+
+print(f"My Function on 1:\t\t {genPartitions(1)}")
+print(f"Function you found on 1\t\t {plane_partition_num(1)}")
+print(f"My Function on 2:\t\t {genPartitions(2)}")
+print(f"Function you found on 2\t\t {plane_partition_num(2)}")
+print(f"My Function on 3:\t\t {genPartitions(3)}")
+print(f"Function you found on 3\t\t {plane_partition_num(3)}")
+print(f"My Function on 4:\t\t {genPartitions(4)}")
+print(f"Function you found on 4\t\t {plane_partition_num(4)}")
+print(f"My Function on 5:\t\t {genPartitions(5)}")
+print(f"Function you found on 5\t\t {plane_partition_num(5)}")
+print(f"My Function on 6:\t\t {genPartitions(6)}")
+print(f"Function you found on 6\t\t {plane_partition_num(6)}")
+print(f"My Function on 7:\t\t {genPartitions(7)}")
+print(f"Function you found on 7\t\t {plane_partition_num(7)}")
+print(f"My Function on 8:\t\t {genPartitions(8)}")
+print(f"Function you found on 8\t\t {plane_partition_num(8)}")
+print(f"My Function on 9:\t\t {genPartitions(9)}")
+print(f"Function you found on 9\t\t {plane_partition_num(9)}")
+print(f"My Function on 10:\t\t {genPartitions(10)}")
+print(f"Function you found on 10\t {plane_partition_num(10)}")
+print(f"My Function on 11:\t\t {genPartitions(11)}")
+print(f"Function you found on 11\t {plane_partition_num(11)}")
+print(f"My Function on 12:\t\t {genPartitions(12)}")
+print(f"Function you found on 12\t {plane_partition_num(12)}")
+print(f"My Function on 13:\t\t {genPartitions(13)}")
+print(f"Function you found on 13\t {plane_partition_num(13)}")
+print(f"My Function on 14:\t\t {genPartitions(14)}")
+print(f"Function you found on 14\t {plane_partition_num(14)}")
+print(f"My Function on 15:\t\t {genPartitions(15)}")
+print(f"Function you found on 15\t {plane_partition_num(15)}")
