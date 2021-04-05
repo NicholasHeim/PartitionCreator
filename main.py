@@ -3,9 +3,10 @@ from bisect import bisect_right
 from math import factorial
 from numpy import prod
 import queue
-import csv
 
-#import multiprocessing as mp
+GENERATE_PARTITIONS = True
+GENERATION_SIZE = 15
+DIMENSIONS = 3
 
 def readFile(filename):
 
@@ -266,6 +267,9 @@ def plane_partition_num ( n ):
 
 def genPartitions(size):
    
+   # Safety in ensuring it is an integer
+   size = int(size)
+
    # Create (size) x (size) list, fill with zeros
    initialPart = [[0 for __ in range(size)] for __ in range(size)]
    
@@ -383,7 +387,7 @@ def findLegalPositions(partition, i, j):
 
 
 def savePartitions(size, partitions):
-   
+
    # Save all generated partitions to a file
    with open(f"size{size}parts.csv", "w") as file:
       for partition in partitions:
@@ -408,15 +412,22 @@ def savePartitions(size, partitions):
 
 def main():
 
-   partition, dimension = readFile(input("Enter the name of the CSV file without the extension: "))
-   hooks = calcHooks(partition, dimension)
+   partition, DIMENSIONS = readFile(input("Enter the name of the CSV file without the extension: "))
+   hooks = calcHooks(partition, DIMENSIONS)
 
-   if(dimension == 2):
+   if(DIMENSIONS == 2):
+
       # Output the calculated number of SYT:
       count = factorial(sum(partition)) / prod([i for sub in hooks for i in sub])
       print("Count:", int(count))
 
-   if(dimension == 3):
+   if(DIMENSIONS == 3):
+
+      # Generate partitions for use in the program.
+      if(GENERATE_PARTITIONS):
+         for i in range(1, GENERATION_SIZE + 1):
+            genPartitions(i)
+
       count = countPSYT(hooks)
       print("\n      Count:", count)
 
@@ -428,5 +439,4 @@ def main():
       
       print("Naive Count:", (numerator/denominator))
    
-#main()
-print(genPartitions(3))
+main()
