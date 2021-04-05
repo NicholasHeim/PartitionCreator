@@ -3,6 +3,7 @@ from bisect import bisect_right
 from math import factorial
 from numpy import prod
 import queue
+import csv
 
 #import multiprocessing as mp
 
@@ -271,10 +272,10 @@ def genPartitions(size):
    # Set this position to zero as we assume that we begin with a "tower" and move one block at a time
    initialPart[0][0] = size
 
-   # Store as a tuple for set item comparison later (hashability check)
+   # Store as a tuple for set item comparison later (hashability for sets)
    initialPart = tuple(tuple(i) for i in initialPart)
 
-   # Set up the set to contain all unique partitions
+   # Create and initialize the set to contain all unique partitions
    uniqueParts = set()
    uniqueParts.add(initialPart)
 
@@ -291,6 +292,27 @@ def genPartitions(size):
       newUnique.clear()
       i += 1
    
+   # Save all generated partitions to a file
+   with open(f"size{size}parts.csv", "w") as file:
+      for partition in uniqueParts:
+         for row in partition:
+
+            # Reset string variable that will hold each row
+            toWrite = ""
+            for height in row:
+               
+               # Remove zeros from the resulting document for later reading
+               if height == 0:
+                  break
+               toWrite += f"{height},"
+
+            # Avoid extra spaces in the resulting document
+            if len(toWrite) != 0:
+               file.write(toWrite[:-1] + "\n")
+         
+         # Add a newline after each partition
+         file.write("\n")
+
    return len(uniqueParts)
 
 
@@ -402,34 +424,4 @@ def main():
       print("Naive Count:", (numerator/denominator))
    
 #main()
-
-print(f"My Function on 1:\t\t {genPartitions(1)}")
-print(f"Function you found on 1\t\t {plane_partition_num(1)}")
-print(f"My Function on 2:\t\t {genPartitions(2)}")
-print(f"Function you found on 2\t\t {plane_partition_num(2)}")
-print(f"My Function on 3:\t\t {genPartitions(3)}")
-print(f"Function you found on 3\t\t {plane_partition_num(3)}")
-print(f"My Function on 4:\t\t {genPartitions(4)}")
-print(f"Function you found on 4\t\t {plane_partition_num(4)}")
-print(f"My Function on 5:\t\t {genPartitions(5)}")
-print(f"Function you found on 5\t\t {plane_partition_num(5)}")
-print(f"My Function on 6:\t\t {genPartitions(6)}")
-print(f"Function you found on 6\t\t {plane_partition_num(6)}")
-print(f"My Function on 7:\t\t {genPartitions(7)}")
-print(f"Function you found on 7\t\t {plane_partition_num(7)}")
-print(f"My Function on 8:\t\t {genPartitions(8)}")
-print(f"Function you found on 8\t\t {plane_partition_num(8)}")
-print(f"My Function on 9:\t\t {genPartitions(9)}")
-print(f"Function you found on 9\t\t {plane_partition_num(9)}")
-print(f"My Function on 10:\t\t {genPartitions(10)}")
-print(f"Function you found on 10\t {plane_partition_num(10)}")
-print(f"My Function on 11:\t\t {genPartitions(11)}")
-print(f"Function you found on 11\t {plane_partition_num(11)}")
-print(f"My Function on 12:\t\t {genPartitions(12)}")
-print(f"Function you found on 12\t {plane_partition_num(12)}")
-print(f"My Function on 13:\t\t {genPartitions(13)}")
-print(f"Function you found on 13\t {plane_partition_num(13)}")
-print(f"My Function on 14:\t\t {genPartitions(14)}")
-print(f"Function you found on 14\t {plane_partition_num(14)}")
-print(f"My Function on 15:\t\t {genPartitions(15)}")
-print(f"Function you found on 15\t {plane_partition_num(15)}")
+print(genPartitions(3))
