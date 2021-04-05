@@ -292,26 +292,7 @@ def genPartitions(size):
       newUnique.clear()
       i += 1
    
-   # Save all generated partitions to a file
-   with open(f"size{size}parts.csv", "w") as file:
-      for partition in uniqueParts:
-         for row in partition:
-
-            # Reset string variable that will hold each row
-            toWrite = ""
-            for height in row:
-               
-               # Remove zeros from the resulting document for later reading
-               if height == 0:
-                  break
-               toWrite += f"{height},"
-
-            # Avoid extra spaces in the resulting document
-            if len(toWrite) != 0:
-               file.write(toWrite[:-1] + "\n")
-         
-         # Add a newline after each partition
-         file.write("\n")
+   savePartitions(size, uniqueParts)
 
    return len(uniqueParts)
 
@@ -399,6 +380,30 @@ def findLegalPositions(partition, i, j):
             listPart[x][y] -= 1
    
    return newParts
+
+
+def savePartitions(size, partitions):
+   
+   # Save all generated partitions to a file
+   with open(f"size{size}parts.csv", "w") as file:
+      for partition in partitions:
+         for row in partition:
+
+            # Reset string variable that will hold each row
+            toWrite = ""
+            for height in row:
+               
+               # Remove zeros from the resulting document for later reading
+               if height == 0:
+                  break
+               toWrite += f"{height},"
+
+            # Avoid extra spaces in the resulting document
+            if len(toWrite) != 0:
+               file.write(toWrite[:-1] + "\n")
+         
+         # Add a newline after each partition
+         file.write("\n")
 
 
 def main():
