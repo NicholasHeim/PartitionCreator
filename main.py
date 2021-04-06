@@ -2,25 +2,27 @@ from itertools import permutations
 from bisect import bisect_right
 from math import factorial
 from numpy import prod
-import queue
+import csv
 
-GENERATE_PARTITIONS = True
-GENERATION_SIZE = 15
-DIMENSIONS = 3
+GENERATE_3D_PARTITIONS  = False
+MAX_GENERATION_SIZE     = 10
+DIMENSIONS              = 3
+TEST_ALL_PARTITIONS     = True # Requires that GENERATE_3D_PARTITIONS has been run up to and through MAX_GENERATION_SIZE
+CLI_OUTPUT              = False
 
 def readFile(filename):
 
+   global DIMENSIONS
+
    #with open(filename + ".csv") as file:
    with open("p3.csv") as file:
-      # Read in the dimension number
-      dims = int(file.readline())
 
-      if(dims == 2):
+      if(DIMENSIONS == 2):
          # Read in partition data, strip for safety
          partition = list(map(int, file.readline().strip().split(',')))
          # Ensure that the partition is in standard form for return
          partition.sort(reverse = True)
-      elif(dims == 3):
+      elif(DIMENSIONS == 3):
          # Each number on a line is the stack height of the plane partition
          partition = list()
          while True:
@@ -28,8 +30,8 @@ def readFile(filename):
             if not line:
                break
             partition.append(list(map(int, line.strip().split(','))))
-      else: return [], dims
-   return partition, dims
+      else: return []
+   return partition
 
 
 def d3Hooks(partition):
@@ -48,20 +50,23 @@ def d3Hooks(partition):
    # Calculate hook lengths of the whole plane partition one level at a time
    hooks = [[[(regPart[level][i] - j + invPartition[level][j] - i - 2) + (partition[i][j] - level) for j in range(regPart[level][i])] for i in range(len(regPart[level]))] for level in range(len(regPart))]
 
-   print("Hook Lengths:")
-   for i, s in enumerate(hooks):
-      print("Level", i + 1)
-      for t in s:
-         print(*t)
+   if(CLI_OUTPUT):
+      print("Hook Lengths:")
+      for i, s in enumerate(hooks):
+         print("Level", i + 1)
+         for t in s:
+            print(*t)
    return hooks
 
 
-def calcHooks(partition, dimension):
+def calcHooks(partition):
 
+   # Create the inverse partition
    invPartition = []
 
-   if(dimension == 2):
-      print("Partition:", *partition)
+   if(DIMENSIONS == 2):
+      if(CLI_OUTPUT): 
+         print("Partition:", *partition)
 
       # Find the inverse of the partition (swap rows and columns)
       invPartition = [len(partition) - bisect_right(partition[::-1], i) for i in range(partition[0])]
@@ -70,9 +75,10 @@ def calcHooks(partition, dimension):
       # Print hook length results to console
       print("Hook lengths:")
       for s in hooks: print(*s)
-   elif(dimension == 3):
-      print("Partition:")
-      for s in partition: print(*s)
+   elif(DIMENSIONS == 3):
+      if(CLI_OUTPUT):
+         print("Partition:")
+         for s in partition: print(*s)
 
       hooks = d3Hooks(partition)
    else:
@@ -412,21 +418,73 @@ def savePartitions(size, partitions):
 
 def main():
 
-   partition, DIMENSIONS = readFile(input("Enter the name of the CSV file without the extension: "))
-   hooks = calcHooks(partition, DIMENSIONS)
+   # Bring in global values from the top of the document
+   global GENERATE_3D_PARTITIONS, MAX_GENERATION_SIZE, DIMENSIONS, TEST_ALL_PARTITIONS
 
    if(DIMENSIONS == 2):
 
+      partition = readFile(input("Enter the name of the CSV file without the extension: "))
+      hooks = calcHooks(partition)
+      
       # Output the calculated number of SYT:
       count = factorial(sum(partition)) / prod([i for sub in hooks for i in sub])
       print("Count:", int(count))
 
    if(DIMENSIONS == 3):
-
+      
       # Generate partitions for use in the program.
-      if(GENERATE_PARTITIONS):
-         for i in range(1, GENERATION_SIZE + 1):
+      if(GENERATE_3D_PARTITIONS):
+         for i in range(1, MAX_GENERATION_SIZE + 1):
             genPartitions(i)
+      
+      if(TEST_ALL_PARTITIONS):
+         
+         # Loop through all files of size i up to the MAX_GENERATION_SIZE
+         for i in range(1, MAX_GENERATION_SIZE + 1):
+
+            # Setup a list to hold the collected partitions
+            loadedParts = list()
+            with open(f"size{i}parts.csv", "r") as file:
+               
+               # Reset the line string to not be empty after finishing a file read
+               line = " "
+               while line:
+
+                  # Setup a list to hold values while reconstructing a partition
+                  partition = list()
+
+                  # Each number on a line is the stack height of the plane partition
+                  while True:
+                     line = file.readline()
+                     if not line or line == "\n":
+                        break
+                     partition.append(list(map(int, line.strip().split(','))))
+                  if len(partition) > 0: 
+                     loadedParts.append(partition)
+
+            # Test all partitions we have collected from file i
+            results = list()
+            for part in loadedParts:
+               hooks = calcHooks(part)
+
+               # Find the "naive" count of PSYT (2D formula)
+               # Take the factorial of n, the size of the partition. Calculated by summing across all heights
+               numerator = factorial(sum([i for col in part for i in col]))
+               
+               # Converts the hook length 3D list into a 1D list and then multiplies all of the values together
+               denominator = prod([i for row in hooks for col in row for i in col])
+
+               results.append((countPSYT(hooks), numerator/denominator))
+
+            # Store the results in a file named accordingly
+            with open(f"size{i}results.csv", "w") as f:
+               save = csv.writer(f)
+               save.writerows(results)
+
+      #partition = readFile(input("Enter the name of the CSV file without the extension: "))
+      #hooks = calcHooks(partition)
+
+      return
 
       count = countPSYT(hooks)
       print("\n      Count:", count)
@@ -438,5 +496,6 @@ def main():
       denominator = prod([i for row in hooks for col in row for i in col])
       
       print("Naive Count:", (numerator/denominator))
-   
+
+
 main()
