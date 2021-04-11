@@ -4,11 +4,13 @@ from math import factorial
 from numpy import prod
 import csv
 
-GENERATE_3D_PARTITIONS  = False
-MAX_GENERATION_SIZE     = 10
-DIMENSIONS              = 3
-TEST_ALL_PARTITIONS     = True # Requires that GENERATE_3D_PARTITIONS has been run up to and through MAX_GENERATION_SIZE
-CLI_OUTPUT              = False
+GENERATE_3D_PARTITIONS  = True  # Determine whether or not the program will generate all partitions of size MIN_GENERATION_SIZE <= n <= MAX_GENERATION_SIZE
+MIN_GENERATION_SIZE     = 1     # Expected to be greater than 0
+MAX_GENERATION_SIZE     = 20    # Expected to be greater than the min
+DIMENSIONS              = 3     
+TEST_ALL_PARTITIONS     = False # Requires that GENERATE_3D_PARTITIONS has been run up to and through MAX_GENERATION_SIZE
+CONFIRM_RESULTS         = False # Run through each file and check that the conjecture holds
+CLI_OUTPUT              = False # Set to true to see some extra outputs to the CLI
 
 def readFile(filename):
 
@@ -418,9 +420,6 @@ def savePartitions(size, partitions):
 
 def main():
 
-   # Bring in global values from the top of the document
-   global GENERATE_3D_PARTITIONS, MAX_GENERATION_SIZE, DIMENSIONS, TEST_ALL_PARTITIONS
-
    if(DIMENSIONS == 2):
 
       partition = readFile(input("Enter the name of the CSV file without the extension: "))
@@ -434,17 +433,17 @@ def main():
       
       # Generate partitions for use in the program.
       if(GENERATE_3D_PARTITIONS):
-         for i in range(1, MAX_GENERATION_SIZE + 1):
+         for i in range(MIN_GENERATION_SIZE, MAX_GENERATION_SIZE + 1):
             genPartitions(i)
       
       if(TEST_ALL_PARTITIONS):
          
          # Loop through all files of size i up to the MAX_GENERATION_SIZE
-         for i in range(1, MAX_GENERATION_SIZE + 1):
+         for i in range(MIN_GENERATION_SIZE, MAX_GENERATION_SIZE + 1):
 
             # Setup a list to hold the collected partitions
             loadedParts = list()
-            with open(f"size{i}parts.csv", "r") as file:
+            with open(f"partition_shapes\size{i}parts.csv", "r") as file:
                
                # Reset the line string to not be empty after finishing a file read
                line = " "
@@ -481,21 +480,18 @@ def main():
                save = csv.writer(f)
                save.writerows(results)
 
-      #partition = readFile(input("Enter the name of the CSV file without the extension: "))
-      #hooks = calcHooks(partition)
+   if(CONFIRM_RESULTS):
 
-      return
-
-      count = countPSYT(hooks)
-      print("\n      Count:", count)
-
-      # Take the factorial of n, the size of the partition. Calculated by summing across all heights
-      numerator = factorial(sum([i for col in partition for i in col]))
-      
-      # Converts the hook length 3D list into a 1D list and then multiplies all of the values together
-      denominator = prod([i for row in hooks for col in row for i in col])
-      
-      print("Naive Count:", (numerator/denominator))
+      # Loop through all files of size i up to the MAX_GENERATION_SIZE
+      for i in range(1, MAX_GENERATION_SIZE + 1):
+         print(i)
+         with open(f"size{i}parts.csv", "r") as file:
+            line = file.readline()
+            if(line[0] < line[1]):
+               print("Conjecture is False")
+               print(f"{i}: {line}")
+   
+   return
 
 
 main()
