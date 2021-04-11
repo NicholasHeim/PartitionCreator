@@ -12,7 +12,7 @@ CONFIRM_RESULTS         = False  # Run through each file and check that the conj
 CLI_OUTPUT              = False  # Set to true to see some extra outputs to the CLI
 
 
-def d3Hooks(partition):
+def hookLengths(partition):
 
    # Determine shape of each level for the hook length calculation
    # This is done using the count of remaining heights in the original
@@ -46,7 +46,7 @@ def calcHooks(partition):
       print("Partition:")
       for s in partition: print(*s)
 
-      hooks = d3Hooks(partition)
+   hooks = hookLengths(partition)
    return hooks
 
 
