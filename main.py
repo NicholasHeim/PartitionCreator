@@ -482,7 +482,7 @@ def main():
             genPartitions(i)
       
       if(GENERATE_RESULTS):
-         generateResults
+         generateResults()
 
       if(CONFIRM_RESULTS):
 
