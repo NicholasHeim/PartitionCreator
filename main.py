@@ -4,13 +4,13 @@ from math import factorial
 from numpy import prod
 import csv
 
-GENERATE_3D_PARTITIONS  = True  # Determine whether or not the program will generate all partitions of size MIN_GENERATION_SIZE <= n <= MAX_GENERATION_SIZE
-MIN_GENERATION_SIZE     = 1     # Expected to be greater than 0
-MAX_GENERATION_SIZE     = 20    # Expected to be greater than the min
+GENERATE_3D_PARTITIONS  = True   # Determine whether or not the program will generate all partitions of size MIN_GENERATION_SIZE <= n <= MAX_GENERATION_SIZE
+MIN_GENERATION_SIZE     = 1      # Expected to be greater than 0
+MAX_GENERATION_SIZE     = 5      # Expected to be greater than the min
 DIMENSIONS              = 3     
-TEST_ALL_PARTITIONS     = False # Requires that GENERATE_3D_PARTITIONS has been run up to and through MAX_GENERATION_SIZE
-CONFIRM_RESULTS         = False # Run through each file and check that the conjecture holds
-CLI_OUTPUT              = False # Set to true to see some extra outputs to the CLI
+GENERATE_RESULTS     = False  # Requires that GENERATE_3D_PARTITIONS has been run up to and through MAX_GENERATION_SIZE
+CONFIRM_RESULTS         = False  # Run through each file and check that the conjecture holds
+CLI_OUTPUT              = False  # Set to true to see some extra outputs to the CLI
 
 def readFile(filename):
 
@@ -296,7 +296,7 @@ def genPartitions(size):
    i = 0
    usedPartitions = set()
    while i < len(uniqueParts):
-      for partition in uniqueParts.symmetric_difference(usedPartitions):
+      for partition in uniqueParts.difference(usedPartitions):
          usedPartitions.add(partition)
          newUnique.update(findLegalBlock(partition))
       
@@ -397,7 +397,7 @@ def findLegalPositions(partition, i, j):
 def savePartitions(size, partitions):
 
    # Save all generated partitions to a file
-   with open(f"size{size}parts.csv", "w") as file:
+   with open(f"partition_shapes\size{size}parts.csv", "w") as file:
       for partition in partitions:
          for row in partition:
 
@@ -418,6 +418,51 @@ def savePartitions(size, partitions):
          file.write("\n")
 
 
+def generateResults():
+
+   # Loop through all files of size i up to the MAX_GENERATION_SIZE
+   for i in range(MIN_GENERATION_SIZE, MAX_GENERATION_SIZE + 1):
+
+      # Setup a list to hold the collected partitions
+      loadedParts = list()
+      with open(f"partition_shapes\size{i}parts.csv", "r") as file:
+         
+         # Reset the line string to not be empty after finishing a file read
+         line = " "
+         while line:
+
+            # Setup a list to hold values while reconstructing a partition
+            partition = list()
+
+            # Each number on a line is the stack height of the plane partition
+            while True:
+               line = file.readline()
+               if not line or line == "\n":
+                  break
+               partition.append(list(map(int, line.strip().split(','))))
+            if len(partition) > 0: 
+               loadedParts.append(partition)
+
+      # Test all partitions we have collected from file i
+      results = list()
+      for part in loadedParts:
+         hooks = calcHooks(part)
+
+         # Find the "naive" count of PSYT (2D formula)
+         # Take the factorial of n, the size of the partition. Calculated by summing across all heights
+         numerator = factorial(sum([i for col in part for i in col]))
+         
+         # Converts the hook length 3D list into a 1D list and then multiplies all of the values together
+         denominator = prod([i for row in hooks for col in row for i in col])
+
+         results.append((countPSYT(hooks), numerator/denominator))
+      
+      # Store the results in a file named accordingly
+      with open(f"results\size{i}.csv", "w") as f:
+         save = csv.writer(f)
+         save.writerows(results)
+
+
 def main():
 
    if(DIMENSIONS == 2):
@@ -436,60 +481,19 @@ def main():
          for i in range(MIN_GENERATION_SIZE, MAX_GENERATION_SIZE + 1):
             genPartitions(i)
       
-      if(TEST_ALL_PARTITIONS):
-         
+      if(GENERATE_RESULTS):
+         generateResults
+
+      if(CONFIRM_RESULTS):
+
          # Loop through all files of size i up to the MAX_GENERATION_SIZE
-         for i in range(MIN_GENERATION_SIZE, MAX_GENERATION_SIZE + 1):
-
-            # Setup a list to hold the collected partitions
-            loadedParts = list()
+         for i in range(1, MAX_GENERATION_SIZE + 1):
+            print(i)
             with open(f"partition_shapes\size{i}parts.csv", "r") as file:
-               
-               # Reset the line string to not be empty after finishing a file read
-               line = " "
-               while line:
-
-                  # Setup a list to hold values while reconstructing a partition
-                  partition = list()
-
-                  # Each number on a line is the stack height of the plane partition
-                  while True:
-                     line = file.readline()
-                     if not line or line == "\n":
-                        break
-                     partition.append(list(map(int, line.strip().split(','))))
-                  if len(partition) > 0: 
-                     loadedParts.append(partition)
-
-            # Test all partitions we have collected from file i
-            results = list()
-            for part in loadedParts:
-               hooks = calcHooks(part)
-
-               # Find the "naive" count of PSYT (2D formula)
-               # Take the factorial of n, the size of the partition. Calculated by summing across all heights
-               numerator = factorial(sum([i for col in part for i in col]))
-               
-               # Converts the hook length 3D list into a 1D list and then multiplies all of the values together
-               denominator = prod([i for row in hooks for col in row for i in col])
-
-               results.append((countPSYT(hooks), numerator/denominator))
-
-            # Store the results in a file named accordingly
-            with open(f"results\size{i}results.csv", "w") as f:
-               save = csv.writer(f)
-               save.writerows(results)
-
-   if(CONFIRM_RESULTS):
-
-      # Loop through all files of size i up to the MAX_GENERATION_SIZE
-      for i in range(1, MAX_GENERATION_SIZE + 1):
-         print(i)
-         with open(f"size{i}parts.csv", "r") as file:
-            line = file.readline()
-            if(line[0] < line[1]):
-               print("Conjecture is False")
-               print(f"{i}: {line}")
+               line = file.readline()
+               if(line[0] < line[1]):
+                  print("Conjecture is False")
+                  print(f"{i}: {line}")
    
    return
 
