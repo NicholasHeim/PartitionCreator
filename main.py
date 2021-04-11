@@ -476,7 +476,7 @@ def main():
                results.append((countPSYT(hooks), numerator/denominator))
 
             # Store the results in a file named accordingly
-            with open(f"size{i}results.csv", "w") as f:
+            with open(f"results\size{i}results.csv", "w") as f:
                save = csv.writer(f)
                save.writerows(results)
 
