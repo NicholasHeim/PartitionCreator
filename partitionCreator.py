@@ -248,7 +248,7 @@ def savePartitions(size, partitions):
 
 
 def generateResults():
-
+ 
    # Loop through all files of size i up to the MAX_GENERATION_SIZE
    for i in range(MIN_GENERATION_SIZE, MAX_GENERATION_SIZE + 1):
 
