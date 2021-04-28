@@ -6,9 +6,9 @@ import csv
 
 GENERATE_3D_PARTITIONS  = True   # Determine whether or not the program will generate all partitions of size MIN_GENERATION_SIZE <= n <= MAX_GENERATION_SIZE
 MIN_GENERATION_SIZE     = 1      # Expected to be greater than 0
-MAX_GENERATION_SIZE     = 5      # Expected to be greater than the min
-GENERATE_RESULTS        = False  # Requires that GENERATE_3D_PARTITIONS has been run up to and through MAX_GENERATION_SIZE
-CONFIRM_RESULTS         = False  # Run through each file and check that the conjecture holds
+MAX_GENERATION_SIZE     = 7      # Expected to be greater than the min
+GENERATE_RESULTS        = True  # Requires that GENERATE_3D_PARTITIONS has been run up to and through MAX_GENERATION_SIZE
+CONFIRM_RESULTS         = True  # Run through each file and check that the conjecture holds
 CLI_OUTPUT              = False  # Set to true to see some extra outputs to the CLI
 
 
@@ -226,7 +226,7 @@ def findLegalPositions(partition, i, j):
 def savePartitions(size, partitions):
 
    # Save all generated partitions to a file
-   with open(f"partition_shapes\size{size}parts.csv", "w") as file:
+   with open(f"partition_shapes/size{size}parts.csv", "w") as file:
       for partition in partitions:
          for row in partition:
 
@@ -254,7 +254,7 @@ def generateResults():
 
       # Setup a list to hold the collected partitions
       loadedParts = list()
-      with open(f"partition_shapes\size{i}parts.csv", "r") as file:
+      with open(f"partition_shapes/size{i}parts.csv", "r") as file:
          
          # Reset the line string to not be empty after finishing a file read
          line = " "
@@ -287,7 +287,7 @@ def generateResults():
          results.append((countPSYT(hooks), numerator/denominator))
       
       # Store the results in a file named accordingly
-      with open(f"results\size{i}.csv", "w") as f:
+      with open(f"results/size{i}.csv", "w") as f:
          save = csv.writer(f)
          save.writerows(results)
 
@@ -307,7 +307,7 @@ def main():
       # Loop through all files of size i up to the MAX_GENERATION_SIZE
       for i in range(1, MAX_GENERATION_SIZE + 1):
          print(i)
-         with open(f"partition_shapes\size{i}parts.csv", "r") as file:
+         with open(f"partition_shapes/size{i}parts.csv", "r") as file:
             line = file.readline()
             if(line[0] < line[1]):
                print("Conjecture is False")
